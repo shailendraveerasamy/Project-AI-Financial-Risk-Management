@@ -4,3 +4,4 @@ pandas
 numpy
 imbalanced-learn
 sklearn
+xgboost==2.1.1
