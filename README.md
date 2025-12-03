@@ -12,4 +12,4 @@ However, because nearly all features in the dataset are hashed or anonymized, in
 
 ### Our current project structure
 
-![project_structure](../Project-AI-Financial-Risk-Management/resource/Ai_financial_risk_mgt_proj_structure.png)
+![project_structure](./resource/Ai_in_financial_risk_management.png)
