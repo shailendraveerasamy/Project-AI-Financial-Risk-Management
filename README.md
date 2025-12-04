@@ -4,12 +4,34 @@
 — Fraud Detection Using Machine Learning
 
 Our project focuses on building a robust machine learning pipeline to detect fraudulent financial transactions. The dataset contains 27 anonymized (hashed) features to preserve confidentiality, and the objective is to classify each transaction as fraudulent or legitimate.
-We will experiment with three different machine learning models: `XGBoostClassifier`, `RangomForestClassifier`, `LogisticRegression`, and we will applying a range of hyperparameter optimization techniques to systematically improve performance—particularly recall, which is critical in fraud detection. After finalizing the best-performing model, we will migrate the full workflow into a clean, modular Python codebase that follows production-grade structure and best practices.
+We will experiment with three different machine learning models: `XGBoostClassifier`, `RandomForestClassifier`, `LogisticRegression`, and we will applying a range of hyperparameter optimization techniques to systematically improve performance—particularly recall, which is critical in fraud detection. After finalizing the best-performing model, we will migrate the full workflow into a clean, modular Python codebase that follows production-grade structure and best practices.
 Once the model is operational in code, we will containerize the application using Docker, ensuring reproducibility and ease of deployment. Finally, we will develop a user-friendly front-end interface using FastAPI and/or Streamlit, enabling real-time predictions and making the system accessible to end users through a cloud deployment.
 
-However, because nearly all features in the dataset are hashed or anonymized, interpreting the model’s decisions and presenting meaningful explanations in the front-end application will be challenging. This limitation affects both model interpretability and user-facing insights. Addressing this will require additional research into techniques such as feature importance mapping, surrogate models, and explainability tools (e.g., SHAP or LIME) that can provide interpretable outputs without exposing sensitive information.
+- Updated Approach and Current Challenges
+
+We have transitioned to a new dataset featuring clearly named variables rather than anonymized features, which significantly improves model interpretability and enables meaningful user-facing explanations. This addresses our previous limitations regarding feature understanding and explanation transparency.
+
+However, this new dataset presents a different technical challenge: with 1.3 million transactions, we need to implement an efficient data sampling and management strategy. Our current focus is developing a robust mechanism to:
+
+1- Intelligently sample approximately 10% of the dataset while preserving class distribution and temporal patterns
+
+2- Implement reshuffling capabilities to ensure model robustness across different data subsets
+
+3- Maintain performance consistency between sampled data and the full dataset
+
+We're exploring stratified sampling techniques, reservoir sampling algorithms, and distributed processing approaches to handle this volume efficiently while ensuring our fraud detection models remain accurate and generalizable across different data segments.
 
 
-### Our current project structure
 
-![project_structure](./resource/Ai_in_financial_risk_management.png)
+### Project in progress
+
+#### Initial state
+![project_structure](./resource/Ai_in_financial_risk_mgt_proj_structure_1.png)
+
+#### Project in progress
+
+![project_structure](./resource/Ai_in_financial_risk_management_2.png)
+
+#### Current project structure
+
+![project_structure](./resource/Ai_in_financial_risk_mgt_proj_structure_3.png)
