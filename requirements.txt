@@ -1,10 +1,9 @@
-seaborn
-xgboost
-pandas
 numpy
-imbalanced-learn
-sklearn
+pandas
+scikit-learn
 xgboost==2.1.1
+imbalanced-learn
+seaborn
 fastapi         # API framework
 pytz            # time zone management
 uvicorn         # web server
