@@ -1,5 +1,7 @@
 from ml_logic.model import build_model, train, evaluate, cross_validate
-# from ml_logic.preprocessor import load_and_preprocess_data
+from ml_logic.registry import save_model
+from ml_logic.preprocessor import save_scaler
+
 
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -23,6 +25,10 @@ X_val, X_test, y_val, y_test = train_test_split(
 
 # scaling
 scaler = RobustScaler()
+scaler.fit(X_train)             # we fit this only on training set
+save_scaler(scaler)             # we add this for API inference ...
+
+
 X_train_scaled = scaler.fit_transform(X_train)
 X_val_scaled   = scaler.transform(X_val)
 X_test_scaled = scaler.transform(X_test)
@@ -41,3 +47,6 @@ train(model, X_train_scaled, y_train, X_val_scaled, y_val)
 result = evaluate(model, X_test_scaled, y_test, threshold=0.5)
 print(result["classification_report"])
 print(result["confusion_matrix"])
+
+# newly added function to save the model so docker/FastAPI can use it, it's saved upon running the command: python training/train_the_model.py
+save_model(model)
