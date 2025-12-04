@@ -1,5 +1,4 @@
-from sklearn.base import accuracy_score
-from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 from sklearn.model_selection import StratifiedKFold, cross_validate, cross_val_score
 import xgboost as xgb
 
@@ -56,7 +55,7 @@ def cross_validate(model, X_train, y_train):
         y_train,
         cv=cv,
         scoring= "average_precision",
-        njobs=-1
+        n_jobs=-1
     )
 
     return scores
