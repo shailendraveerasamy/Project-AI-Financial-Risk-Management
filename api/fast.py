@@ -11,7 +11,7 @@ def route():
 
 @app.get("/predict")
 def predict(
-    Time: float,
+    Time: str,
     Amount: float,
     V1: float, V2: float, V3: float, V4: float, V5: float, V6: float, V7: float,
     V8: float, V9: float, V10: float, V11: float, V12: float, V13: float,
@@ -21,6 +21,14 @@ def predict(
 ):
     model = load_model()
 
+    # try except added to solve issues with time after it is changed to str ...
+    try:
+        Time = pd.to_datetime(Time)
+        Time = (Time - pd.Timestamp("1970-01-01")) / pd.Timedelta(seconds=1)
+    except Exception:
+        return {"error": "Invalid Time format. Use YYYY-MM-DD HH:MM:SS"}
+
+    #
     X = pd.DataFrame([locals()]) # it will ollect all inputs automatically
 
     X_processed = preprocess_for_inference(X)

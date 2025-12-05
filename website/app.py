@@ -1,9 +1,9 @@
 import streamlit as st
 import requests
 
-st.markdown('''
-# Challenge 1 : Streamlit for restitution
-''')
+st.markdown('''# Fraud Detection Demo''')
+
+
 Amount = st.number_input("Amount", format="%.6f")
 V1 = st.number_input("V1", format="%.6f")
 V2 = st.number_input("V2", format="%.6f")
@@ -35,9 +35,12 @@ V27 = st.number_input("V27", format="%.6f")
 V28 = st.number_input("V28", format="%.6f")
 
 # url = "https://taxifare.lewagon.ai/predict"
-url = "http://127.0.0.1:8000/predict"
+url = "http://127.0.0.1:8001/predict"
+
+Time = st.text_input("Time (YYYY-MM-DD HH:MM:SS)")
+
 params = {
-    "Time": "2025-01-01 19:18:00",
+    "Time": Time,
     "Amount": Amount,
     "V1": V1,
     "V2": V2,
@@ -69,10 +72,25 @@ params = {
     "V28": V28
 }
 
-response = requests.get(url, params=params)
+# response = requests.get(url, params=params)
 
-print(response.json())
+# print(response.json())
 
-# Display the result in Streamlit
-st.write("### Predicted :")
-st.json(response.json())
+# # Display the result in Streamlit
+# st.write("### Predicted :")
+# st.json(response.json())
+
+
+# 🔘 ADD BUTTON HERE
+# -----------------------
+if st.button("Predict Fraud Score"):
+
+    response = requests.get(url, params=params)
+
+    # Display the result in Streamlit
+    st.write("### Predicted :")
+    if response.json()["fraud_probability"] > 0.5:
+        st.write("It's a Fraud")
+    else:
+        st.write("It's not a Fraud")
+    # st.json(response.json())
