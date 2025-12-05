@@ -34,7 +34,8 @@ V26 = st.number_input("V26", format="%.6f")
 V27 = st.number_input("V27", format="%.6f")
 V28 = st.number_input("V28", format="%.6f")
 
-url = "https://taxifare.lewagon.ai/predict"
+# url = "https://taxifare.lewagon.ai/predict"
+url = "http://127.0.0.1:8000/predict"
 params = {
     "Time": "2025-01-01 19:18:00",
     "Amount": Amount,

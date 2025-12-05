@@ -26,7 +26,10 @@ def predict(
     X_processed = preprocess_for_inference(X)
     proba = model.predict_proba(X_processed)[0, 1]
 
-    return {"fraud_probability": float(proba)}
+    if proba > 0.5:
+        return {"The likelihood of being a Fraud is ": float(proba), "fraud": True}
+    else:
+        return {"The likelihood of being a Fraud is": float(proba)}
 
 # it ll work locally with:
 # uvicorn api.fast:app --reload
