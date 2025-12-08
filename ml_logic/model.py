@@ -1,6 +1,7 @@
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 from sklearn.model_selection import StratifiedKFold, cross_validate, cross_val_score
 import xgboost as xgb
+from catboost import CatBoostClassifier
 
 
 BEST_PARAMETERS = {
@@ -76,3 +77,31 @@ def evaluate(model, X_test, y_test, threshold=0.5):
         "accuracy": accuracy,
         "confusion_matrix": conf_metrics
     }
+
+
+def build_new_model():
+    """
+    creating an CatBoost model with default parameters ...
+    """
+    model = CatBoostClassifier(scale_pos_weight=99.39)
+
+    return model
+
+
+def train_new_model(model, X_train, y_train, X_val = None, y_val=None):
+    """
+    train the model, lets us see if we add validation set
+    """
+    categorical_features = ['category','gender']
+    if X_val is not None:
+        model.fit(
+            X_train,
+            y_train,
+            cat_features=categorical_features,
+            eval_set=[(X_val, y_val)],
+            verbose=False
+        )
+    else:
+        model.fit(X_train, y_train, cat_features=categorical_features, verbose=False)
+
+    return model
