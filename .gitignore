@@ -1,2 +1,14 @@
 raw_data/
 *.csv
+
+# Python
+__pycache__/
+*.pyc
+
+# ML artifacts
+models/
+catboost_info/
+*.joblib
+
+# OS
+.DS_Store
