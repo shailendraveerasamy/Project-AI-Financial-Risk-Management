@@ -25,13 +25,21 @@ We're exploring stratified sampling techniques, reservoir sampling algorithms, a
 
 ### Project in progress
 
-#### Initial state
+#### Initial state of the project
 ![project_structure](./resource/Ai_in_financial_risk_mgt_proj_structure_1.png)
 
 #### Project in progress
 
 ![project_structure](./resource/Ai_in_financial_risk_management_2.png)
 
-#### Current project structure
+#### Project in progress
 
 ![project_structure](./resource/Ai_in_financial_risk_mgt_proj_structure_3.png)
+
+#### Project while implimenting the frontend and backend
+
+![project_structure](./resource/AI_in_financial_risk_mgt_proj_structure_4.png)
+
+#### Current state of the project
+
+![project_structure](./resource/Ai_in_financial_risk_mgt_proj_structure_5.png)
