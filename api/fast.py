@@ -46,8 +46,6 @@ def route():
 # # it ll work locally with:
 # # uvicorn api.fast:app --reload
 
-model = load_model()
-THRESHOLD = 0.5
 
 @app.get("/predict_new")
 def predict_new(
@@ -61,6 +59,9 @@ def predict_new(
     merch_lat: float,
     merch_long: float
 ):
+    model = load_model()
+    THRESHOLD = 0.5
+
     X = pd.DataFrame([{
         "trans_date_trans_time": trans_date_trans_time,
         "category": category,
@@ -73,6 +74,7 @@ def predict_new(
         "merch_long": merch_long
     }])
 
+
     X_processed = preprocess_new_data(X)
 
     proba = model.predict_proba(X_processed)[0, 1]
@@ -82,7 +84,12 @@ def predict_new(
     #     "fraud_probability": float(proba),
     #     "fraud": bool(is_fraud)
     # }
+    # if proba > THRESHOLD:
+    #     return {"The likelihood of being a Fraud is ": float(proba), "fraud": True}
+    # else:
+    #     return {"The likelihood of being a Fraud is": float(proba)}
+
     if proba > THRESHOLD:
-        return {"The likelihood of being a Fraud is ": float(proba), "fraud": True}
+        return {"The likelihood of being a Fraud is ": float(is_fraud), "fraud": True}
     else:
-        return {"The likelihood of being a Fraud is": float(proba)}
+        return {"The likelihood of being a Fraud is": float(is_fraud)}
