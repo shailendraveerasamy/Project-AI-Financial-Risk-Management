@@ -82,10 +82,6 @@ h1, h2, h3, h4, h5, h6,
 .block-container p {
     color: #111827 !important;
 }
-
-
-
-
 </style>
 """, unsafe_allow_html=True)
 
@@ -117,16 +113,16 @@ st.markdown("---")
 # --------------------------
 # Backend URL
 # --------------------------
-# url = "https://taxifare.lewagon.ai/predict"
-url = "https://fraud-app-546443544540.europe-west1.run.app"
+url = "http://127.0.0.1:8000/predict_new"
+#url = "https://fraud-app-546443544540.europe-west1.run.app"
 
 # --------------------------
 # Input form
 # --------------------------
 with st.form("fraud_form"):
 
-    # Amount only (Time removed completely)
-    Amount = st.number_input("💰 Amount", format="%.6f", min_value=0.0, value=10000.0)
+    # Transaction amount
+    amt = st.number_input("💰 Amount", format="%.6f", min_value=0.0, value=10000.0)
 
     st.markdown("### 🔢 Transaction Features")
 
@@ -183,10 +179,20 @@ with st.form("fraud_form"):
 # Prediction logic
 # --------------------------
 if submit:
-    # Prepare params for API (no Time here anymore)
+    # Extract and format values for API
+    trans_dt = features["Transaction date/ time"]
+    dob = features["Date of Birth"]
+
     params = {
-        "Amount": Amount,
-        **features,
+        "trans_date_trans_time": trans_dt.strftime("%Y-%m-%d %H:%M:%S"),
+        "category": features["Category"],
+        "amt": amt,
+        "gender": features["Gender"],
+        "lat": features["Lat (Cardholder)"],
+        "long": features["Long (Cardholder)"],
+        "dob": dob.strftime("%Y-%m-%d"),
+        "merch_lat": features["Lat (Merchant)"],
+        "merch_long": features["Long (Merchant)"],
     }
 
     try:
@@ -194,6 +200,7 @@ if submit:
         response.raise_for_status()
         data = response.json()
 
+        # Expecting: {"fraud_probability": float, "fraud": bool}
         fraud_prob = data.get("fraud_probability", None)
 
         st.markdown("---")
@@ -205,7 +212,6 @@ if submit:
         else:
             prob_percent = round(fraud_prob * 100, 2)
 
-            # Nice metric display
             col1, col2 = st.columns([1, 2])
             with col1:
                 st.metric(
