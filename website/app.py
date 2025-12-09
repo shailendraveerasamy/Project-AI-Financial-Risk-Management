@@ -1,5 +1,6 @@
 import streamlit as st
 import requests
+from datetime import datetime
 
 # --------------------------
 # Page config
@@ -52,6 +53,39 @@ div[data-testid="baseButton-primary"] {
     width: 100%;
     border-radius: 12px;
 }
+
+/* Fix text colour inside st.text_input */
+.stTextInput input {
+    color: #111827 !important;         /* dark text */
+    background-color: #f9fafb !important;
+}
+
+/* Fix placeholder colour */
+.stTextInput input::placeholder {
+    color: #6b7280 !important;         /* subtle gray */
+}
+
+/* Force headings to be dark */
+h1, h2, h3, h4, h5, h6,
+.block-container h1,
+.block-container h2,
+.block-container h3,
+.block-container h4,
+.block-container h5,
+.block-container h6 {
+    color: #111827 !important;   /* <- dark gray */
+}
+
+/* Streamlit sometimes renders markdown headers as <p> tags */
+.block-container p strong,
+.block-container p em,
+.block-container p {
+    color: #111827 !important;
+}
+
+
+
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -74,46 +108,72 @@ st.markdown("## 💳 Fraud Detection Demo")
 st.markdown(
     """
     Use this demo to estimate the **likelihood that a given credit card transaction is fraudulent**
-    based on its amount, timestamp, and anonymized PCA features *(V1–V28)*.
+    based on its amount and other transaction features.
     """
 )
 
 st.markdown("---")
 
 # --------------------------
+# Backend URL
+# --------------------------
+# url = "https://taxifare.lewagon.ai/predict"
+url = "https://fraud-app-546443544540.europe-west1.run.app"
+
+# --------------------------
 # Input form
 # --------------------------
-# Backend URL
-# url = "https://taxifare.lewagon.ai/predict"
-url = "http://127.0.0.1:8001/predict"
-
 with st.form("fraud_form"):
-    # Time + Amount at the top
-    top_col1, top_col2 = st.columns([2, 1])
 
-    with top_col1:
-        Time = st.text_input("🕒 Time (YYYY-MM-DD HH:MM:SS)", value="2013-01-01 12:00:00")
+    # Amount only (Time removed completely)
+    Amount = st.number_input("💰 Amount", format="%.6f", min_value=0.0, value=10000.0)
 
-    with top_col2:
-        Amount = st.number_input("💰 Amount", format="%.6f", min_value=0.0, value=100.0)
+    st.markdown("### 🔢 Transaction Features")
 
-    st.markdown("### 🔢 Anonymized Transaction Features (V1 – V28)")
+    feature_config = {
+        "Transaction date/ time": {"type": "datetime"},
+        "Category": {"type": "select", "options": ["Food", "Travel", "Shopping", "Other"]},
+        "Gender": {"type": "select", "options": ["Male", "Female", "Other"]},
+        "Lat (Cardholder)": {"type": "number"},
+        "Long (Cardholder)": {"type": "number"},
+        "Date of Birth": {"type": "date"},
+        "Lat (Merchant)": {"type": "number"},
+        "Long (Merchant)": {"type": "number"},
+    }
 
-    # Feature grid
-    feature_names = [f"V{i}" for i in range(1, 29)]
     features = {}
+    cols = st.columns(4)  # 4-column grid
 
-    cols = st.columns(4)  # 4 columns grid
-
-    for idx, feature in enumerate(feature_names):
+    for idx, (feature, config) in enumerate(feature_config.items()):
         col = cols[idx % 4]
         with col:
-            features[feature] = st.number_input(
-                feature,
-                format="%.6f",
-                value=0.0,
-                key=feature
-            )
+            if config["type"] == "number":
+                features[feature] = st.number_input(
+                    feature,
+                    format="%.6f",
+                    value=0.0,
+                    key=feature,
+                )
+            elif config["type"] == "select":
+                features[feature] = st.selectbox(
+                    feature,
+                    config["options"],
+                    key=feature
+                )
+            elif config["type"] == "datetime":
+                features[feature] = st.datetime_input(
+                    feature,
+                    value=datetime.now(),
+                    key=feature
+                )
+            elif config["type"] == "date":
+                features[feature] = st.date_input(
+                    feature,
+                    value=datetime(1990, 1, 1),
+                    min_value=datetime(1920, 1, 1),   # lower bound for DOB
+                    max_value=datetime(2026, 1, 1),   # upper bound for DOB
+                    key=feature
+                )
 
     # Submit button
     st.markdown(" ")
@@ -123,9 +183,8 @@ with st.form("fraud_form"):
 # Prediction logic
 # --------------------------
 if submit:
-    # Prepare params for API
+    # Prepare params for API (no Time here anymore)
     params = {
-        "Time": Time,
         "Amount": Amount,
         **features,
     }
