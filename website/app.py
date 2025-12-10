@@ -120,6 +120,7 @@ st.markdown("---")
 # url = "https://taxifare.lewagon.ai/predict"
 url = "https://fraud-app-546443544540.europe-west1.run.app"
 
+
 # --------------------------
 # Input form
 # --------------------------
