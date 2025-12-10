@@ -143,6 +143,7 @@ CATEGORY_MAP = {
 CATEGORY_OPTIONS = list(CATEGORY_MAP.values())
 REVERSE_CATEGORY_MAP = {v: k for k, v in CATEGORY_MAP.items()}
 
+
 # --------------------------
 # Input form
 # --------------------------
