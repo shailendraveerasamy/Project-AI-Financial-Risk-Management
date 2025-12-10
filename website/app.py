@@ -161,6 +161,54 @@ MERCHANT_LOCATIONS = {
 }
 
 # --------------------------
+# Mapping: UI label -> model category value
+# --------------------------
+CATEGORY_TO_MODEL = {
+    "Miscellaneous (Online)": "misc_net",
+    "Miscellaneous (In-Store)": "misc_pos",
+    "Entertainment": "entertainment",
+    "Gas & Transport": "gas_transport",
+    "Groceries (In-Store)": "grocery_pos",
+    "Grocery (Online)": "grocery_net",
+    "Shopping (Online)": "shopping_net",
+    "Shopping (In-Store)": "shopping_pos",
+    "Food & Dining": "food_dining",
+    "Personal Care": "personal_care",
+    "Health & Fitness": "health_fitness",
+    "Travel": "travel",
+    "Kids & Pets": "kids_pets",
+    "Home": "home",
+}
+
+# --------------------------
+# Feature configuration (for the UI)
+# --------------------------
+feature_config = {
+    "Transaction date/ time": {"type": "datetime"},
+    "Category": {
+        "type": "select",
+        "options": [
+            "Miscellaneous (Online)",   # misc_net
+            "Miscellaneous (In-Store)", # misc_pos
+            "Entertainment",            # entertainment
+            "Gas & Transport",          # gas_transport
+            "Groceries (In-Store)",     # grocery_pos
+            "Grocery (Online)",         # grocery_net
+            "Shopping (Online)",        # shopping_net
+            "Shopping (In-Store)",      # shopping_pos
+            "Food & Dining",            # food_dining
+            "Personal Care",            # personal_care
+            "Health & Fitness",         # health_fitness
+            "Travel",                   # travel
+            "Kids & Pets",              # kids_pets
+            "Home",                     # home
+        ],
+    },
+    "Gender": {"type": "select", "options": ["M", "F"]},
+    "Date of Birth": {"type": "date"},
+}
+
+# --------------------------
 # Input form
 # --------------------------
 with st.form("fraud_form"):
@@ -168,31 +216,6 @@ with st.form("fraud_form"):
     amt = st.number_input("💰 Amount", format="%.6f", min_value=0.0, value=10000.0)
 
     st.markdown("### 🔢 Transaction Features")
-
-    feature_config = {
-        "Transaction date/ time": {"type": "datetime"},
-        "Category": {
-            "type": "select",
-            "options": [
-                "Miscellaneous (Online)",
-                "Miscellaneous (In-Store)",
-                "Entertainment",
-                "Gas & Transport",
-                "Groceries (In-Store)",
-                "Grocery (Online)",
-                "Shopping (Online)",
-                "Shopping (In-Store)",
-                "Food & Dining",
-                "Personal Care",
-                "Health & Fitness",
-                "Travel",
-                "Kids & Pets",
-                "Home",
-            ],
-        },
-        "Gender": {"type": "select", "options": ["Male", "Female", "Other"]},
-        "Date of Birth": {"type": "date"},
-    }
 
     features = {}
     cols = st.columns(4)  # 4-column grid
@@ -239,7 +262,7 @@ with st.form("fraud_form"):
             key="merchant_location",
         )
 
-    # Optional: show what is actually sent to the model
+    # Optional: show what is actually sent to the model (geolocation)
     with st.expander("Advanced (optional): coordinates used for the model"):
         st.write("These values are sent to the model, but you don't need to edit them.")
         st.json(
@@ -265,60 +288,77 @@ if submit:
     cardholder_coords = CARDHOLDER_LOCATIONS[cardholder_location]
     merchant_coords = MERCHANT_LOCATIONS[merchant_location]
 
-    params = {
-        "trans_date_trans_time": trans_dt.strftime("%Y-%m-%d %H:%M:%S"),
-        "category": features["Category"],
-        "amt": amt,
-        "gender": features["Gender"],
-        "lat": cardholder_coords["lat"],
-        "long": cardholder_coords["long"],
-        "dob": dob.strftime("%Y-%m-%d"),
-        "merch_lat": merchant_coords["lat"],
-        "merch_long": merchant_coords["long"],
-    }
+    # Kategorie fürs Model umwandeln
+    category_display = features["Category"]
+    category_model_value = CATEGORY_TO_MODEL.get(category_display)
 
-    try:
-        response = requests.get(url, params=params)
-        response.raise_for_status()
-        data = response.json()
+    if category_model_value is None:
+        st.error(f"Unknown category selected: {category_display}")
+    else:
+        params = {
+            "trans_date_trans_time": trans_dt.strftime("%Y-%m-%d %H:%M:%S"),
+            "category": category_model_value,  # Model-Name, nicht Label
+            "amt": amt,
+            "gender": features["Gender"],
+            "lat": cardholder_coords["lat"],
+            "long": cardholder_coords["long"],
+            "dob": dob.strftime("%Y-%m-%d"),
+            "merch_lat": merchant_coords["lat"],
+            "merch_long": merchant_coords["long"],
+        }
 
-        # Try several possible keys from the backend
-        fraud_prob = data.get("fraud_probability", None)
-        if fraud_prob is None:
-            fraud_prob = data.get("The likelihood of being a Fraud is ", None)  # with space
-        if fraud_prob is None:
-            fraud_prob = data.get("The likelihood of being a Fraud is", None)   # without space
+        # Optional: show all values sent to the model
+        with st.expander("Advanced (optional): values sent to the model"):
+            st.json(
+                {
+                    "category_display": category_display,
+                    "category_model_value": category_model_value,
+                    "params": params,
+                }
+            )
 
-        # Optional: derive fraud flag (if present)
-        fraud_flag = data.get("fraud", None)
+        try:
+            response = requests.get(url, params=params)
+            response.raise_for_status()
+            data = response.json()
 
-        st.markdown("---")
-        st.markdown("### 🧮 Prediction Result")
+            # Try several possible keys from the backend
+            fraud_prob = data.get("fraud_probability", None)
+            if fraud_prob is None:
+                fraud_prob = data.get("The likelihood of being a Fraud is ", None)  # with space
+            if fraud_prob is None:
+                fraud_prob = data.get("The likelihood of being a Fraud is", None)   # without space
 
-        if fraud_prob is None:
-            st.warning("The API response did not contain a usable fraud probability 🤔")
-            st.json(data)
-        else:
-            prob_percent = round(float(fraud_prob) * 100, 2)
-            col1, col2 = st.columns([1, 2])
+            # Optional: derive fraud flag (if present)
+            fraud_flag = data.get("fraud", None)
 
-            with col1:
-                st.metric(
-                    label="Fraud probability",
-                    value=f"{prob_percent} %",
-                )
+            st.markdown("---")
+            st.markdown("### 🧮 Prediction Result")
 
-            with col2:
-                if fraud_flag is None:
-                    fraud_flag = float(fraud_prob) > 0.5
-
-                if fraud_flag:
-                    st.error("🚨 **High risk: This transaction is likely FRAUDULENT.**")
-                else:
-                    st.success("✅ **Low risk: This transaction is likely NOT fraud.**")
-
-            with st.expander("🔍 Raw API response"):
+            if fraud_prob is None:
+                st.warning("The API response did not contain a usable fraud probability 🤔")
                 st.json(data)
+            else:
+                prob_percent = round(float(fraud_prob) * 100, 2)
+                col1, col2 = st.columns([1, 2])
 
-    except requests.exceptions.RequestException as e:
-        st.error(f"Error while calling the prediction API: {e}")
+                with col1:
+                    st.metric(
+                        label="Fraud probability",
+                        value=f"{prob_percent} %",
+                    )
+
+                with col2:
+                    if fraud_flag is None:
+                        fraud_flag = float(fraud_prob) > 0.5
+
+                    if fraud_flag:
+                        st.error("🚨 **High risk: This transaction is likely FRAUDULENT.**")
+                    else:
+                        st.success("✅ **Low risk: This transaction is likely NOT fraud.**")
+
+                with st.expander("🔍 Raw API response"):
+                    st.json(data)
+
+        except requests.exceptions.RequestException as e:
+            st.error(f"Error while calling the prediction API: {e}")
