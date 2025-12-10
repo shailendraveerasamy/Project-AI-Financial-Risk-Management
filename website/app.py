@@ -98,8 +98,9 @@ st.markdown("---")
 # --------------------------
 # Backend URL
 # --------------------------
-url = "http://127.0.0.1:8000/predict_new"
-# url = "https://fraud-app-546443544540.europe-west1.run.app"
+#url = "http://127.0.0.1:8000/predict_new"
+url = "https://fraud-app-546443544540.europe-west1.run.app/predict_new"
+
 # --------------------------
 # Predefined locations (user-friendly → coordinates)
 # --------------------------
@@ -116,6 +117,8 @@ MERCHANT_LOCATIONS = {
     "Paris Boutique": {"lat": 48.8566, "long": 2.3522},
 }
 
+    # Transaction amount
+    amt = st.number_input("💰 Amount", format="%.6f", min_value=0.0, value=10000.0)
 
 # --------------------------
 # Category options
@@ -209,29 +212,24 @@ if submit:
     # Extract and format values for API
     trans_dt = features["Transaction date/ time"]
     dob = features["Date of Birth"]
-    # Look up coordinates from the selected locations
-    cardholder_coords = CARDHOLDER_LOCATIONS[cardholder_location]
-    merchant_coords = MERCHANT_LOCATIONS[merchant_location]
 
     params = {
         "trans_date_trans_time": trans_dt.strftime("%Y-%m-%d %H:%M:%S"),
         "category": features["Category"],
         "amt": amt,
         "gender": features["Gender"],
-        "lat": cardholder_coords["lat"],
-        "long": cardholder_coords["long"],
+        "lat": features["Lat (Cardholder)"],
+        "long": features["Long (Cardholder)"],
         "dob": dob.strftime("%Y-%m-%d"),
-        "merch_lat": merchant_coords["lat"],
-        "merch_long": merchant_coords["long"],
-}
-
-    # Convert UI category → backend category key
-    params["category"] = REVERSE_CATEGORY_MAP[params["category"]]
+        "merch_lat": features["Lat (Merchant)"],
+        "merch_long": features["Long (Merchant)"],
+    }
 
     try:
         response = requests.get(url, params=params)
         response.raise_for_status()
         data = response.json()
+
         # Expecting: {"fraud_probability": float, "fraud": bool}
         fraud_prob = data.get("fraud_probability", None)
         st.markdown("---")
@@ -241,6 +239,7 @@ if submit:
             st.json(data)
         else:
             prob_percent = round(fraud_prob * 100, 2)
+
             col1, col2 = st.columns([1, 2])
             with col1:
                 st.metric(
