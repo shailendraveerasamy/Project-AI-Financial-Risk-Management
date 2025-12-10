@@ -115,8 +115,8 @@ st.markdown("---")
 # --------------------------
 # Backend URL
 # --------------------------
-url = "http://127.0.0.1:8000/predict_new"
-# url = "https://fraud-app-546443544540.europe-west1.run.app"
+#url = "http://127.0.0.1:8000/predict_new"
+url = "https://fraud-app-546443544540.europe-west1.run.app"
 
 # --------------------------
 # Predefined locations (user-friendly → coordinates)
