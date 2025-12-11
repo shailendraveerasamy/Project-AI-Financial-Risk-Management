@@ -6,7 +6,7 @@ from datetime import datetime, date
 # Page config
 # --------------------------
 st.set_page_config(
-    page_title="Fraud Detection Demo",
+    page_title="Fraud Detection",
     page_icon="💳",
     layout="wide"
 )
@@ -92,7 +92,7 @@ h1, h2, h3, h4, h5, h6,
 # Sidebar
 # --------------------------
 with st.sidebar:
-    st.subheader("💳 About this demo")
+    st.subheader("💳 About this tool")
     st.write(
         "This app sends transaction features to a fraud detection model "
         "and returns the **likelihood of credit card fraud**."
