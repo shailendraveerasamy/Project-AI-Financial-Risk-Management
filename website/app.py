@@ -103,7 +103,7 @@ with st.sidebar:
 # --------------------------
 # Header
 # --------------------------
-st.markdown("## 💳 Fraud Detection Demo")
+st.markdown("## 💳 Fraud Detection")
 st.markdown(
     """
     Use this demo to estimate the **likelihood that a given credit card transaction is fraudulent**
